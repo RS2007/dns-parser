@@ -58,6 +58,7 @@ size_t parse_question(const char *bytes, DNS_Question_t *question) {
                       });
   char *domain_name = (char *)malloc(domain_name_str.size());
   strncpy(domain_name, domain_name_str.c_str(), domain_name_str.size());
+  domain_name[domain_name_str.size()] = '\0';
   question->q_name = domain_name;
   typedef struct __attribute__((packed)) {
     uint16_t q_type;
