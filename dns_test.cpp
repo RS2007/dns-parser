@@ -18,12 +18,37 @@ std::vector<char> HexToBytes(const std::string &hex) {
 
 void test_dns_header_parse() {
   std::vector<char> bytes1 = HexToBytes(
-      "a0208180000100010000000105666f6e74730a676f6f676c656170697303636f6d000001"
-      "0001c00c00010001000000ae00048efab64a0000290200000000000000");
-  /* std::vector<char> bytes1 =
-   * HexToBytes("ec2e98e9046b34e894fa3f5e08004500006b030400003e11f7c4c0a80001c0a80068003581c300577fa37baf818000010001000000010f7a2d7034322d696e7374616772616d046331307209696e7374616772616d03636f6d0000010001c00c000100010000000c00049df017ae0000290200000000000000");
-   */
-  std::string str = std::string(bytes1.begin(), bytes1.end());
+      "0000000000000020920000c2100000084f300001e000000645000010000000590c56c676"
+      "f6f676602756473716d64737f686d237e646d24657f6c6364100d6f6363037e69616d6f6"
+      "4656c676f6f676d01356d24657f6c636d237e6b015007e00000010006000630c130c1347"
+      "375677d2375780b0009c00000010005000130c004756e630073676a7f6d6603756369667"
+      "275637265677b046f6270740f6d657374046f627074072005f10000010005000c00c1000"
+      "c100007627f63016c6c696a7f6d6704727f60707573770100010002000100008186da75a"
+      "93fd0020cc5300c6008a0c10008a0c328c11d3000091333f0000540080a15a749f6148bf"
+      "39cfe49c07"); /* std::vector<char> bytes1 =
+                      * HexToBytes("ec2e98e9046b34e894fa3f5e08004500006b030400003e11f7c4c0a80001c0a80068003581c300577fa37baf818000010001000000010f7a2d7034322d696e7374616772616d046331307209696e7374616772616d03636f6d0000010001c00c000100010000000c00049df017ae0000290200000000000000");
+                      */
+  /* std::string str = std::string(bytes1.begin(), bytes1.end()); */
+  unsigned char resp[] = {
+      0xfc, 0x9d, 0x81, 0x80, 0x00, 0x01, 0x00, 0x06, 0x00, 0x02, 0x00, 0x02,
+      0x03, 'c',  'd',  'n',  0x07, 's',  's',  't',  'a',  't',  'i',  'c',
+      0x03, 'n',  'e',  't',  0x00, 0x00, 0x01, 0x00, 0x01, 0xc0, 0x0c, 0x00,
+      0x05, 0x00, 0x01, 0x00, 0x00, 0x00, 'f',  0x00, 0x02, 0xc0, 0x10, 0xc0,
+      0x10, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 'f',  0x00, 0x04, 'h',
+      0x10, 'g',  0xcc, 0xc0, 0x10, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
+      'f',  0x00, 0x04, 'h',  0x10, 'k',  0xcc, 0xc0, 0x10, 0x00, 0x01, 0x00,
+      0x01, 0x00, 0x00, 0x00, 'f',  0x00, 0x04, 'h',  0x10, 'h',  0xcc, 0xc0,
+      0x10, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 'f',  0x00, 0x04, 'h',
+      0x10, 'j',  0xcc, 0xc0, 0x10, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00,
+      'f',  0x00, 0x04, 'h',  0x10, 'i',  0xcc, 0xc0, 0x10, 0x00, 0x02, 0x00,
+      0x01, 0x00, 0x00, 0x99, 'L',  0x00, 0x0b, 0x08, 'c',  'f',  '-',  'd',
+      'n',  's',  '0',  '2',  0xc0, 0x10, 0xc0, 0x10, 0x00, 0x02, 0x00, 0x01,
+      0x00, 0x00, 0x99, 'L',  0x00, 0x0b, 0x08, 'c',  'f',  '-',  'd',  'n',
+      's',  '0',  '1',  0xc0, 0x10, 0xc0, 0xa2, 0x00, 0x01, 0x00, 0x01, 0x00,
+      0x00, 0x99, 'L',  0x00, 0x04, 0xad, 0xf5, ':',  '5',  0xc0, 0x8b, 0x00,
+      0x01, 0x00, 0x01, 0x00, 0x00, 0x99, 'L',  0x00, 0x04, 0xad, 0xf5, ';',
+      0x04};
+  std::string str = std::string(resp, resp + sizeof(resp));
   DNS_Header_t *dns_header = parse_header((char *)str.c_str());
   uint16_t RESERVED_FLAG = 0b0000000001000000;
   if ((dns_header->flags & RESERVED_FLAG) != 0) {
@@ -48,6 +73,7 @@ void test_dns_header_parse() {
   }
   size_t qn_count = htobe16(dns_header->question_count);
   size_t tot_qn_size = 0;
+  size_t tot_an_size = 0;
   for (size_t i = 0; i < qn_count; i++) {
     DNS_Question_t *dns_question =
         (DNS_Question_t *)malloc(sizeof(DNS_Question_t));
@@ -66,7 +92,8 @@ void test_dns_header_parse() {
             << tot_qn_size + sizeof(DNS_Header_t) << "\n";
   for (size_t i = 0; i < htobe16(dns_header->answer_count); i++) {
     auto dns_answer = (DNS_Resource_t *)malloc(sizeof(DNS_Resource_t));
-    parse_answer((char *)str.c_str() + sizeof(DNS_Header_t) + tot_qn_size,
+    parse_answer((char *)str.c_str() + sizeof(DNS_Header_t) + tot_qn_size +
+                     tot_an_size,
                  dns_answer, (char *)str.c_str());
     std::cout << "Answer name = " << dns_answer->r_name << "\n";
     std::cout << "Answer type = "
