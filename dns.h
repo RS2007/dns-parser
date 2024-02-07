@@ -45,16 +45,21 @@ dns_name_string *get_name(char *bytes, char *orig_buffer) {
   size_t len;
   std::vector<std::string> names;
   char *q_start = (char *)bytes;
-  if ((q_start[i] & 0b11000000) == 0b11000000) {
-    q_start = orig_buffer + (htobe16((*(uint16_t *)q_start)) & 0x3FFF);
-  }
-  len = q_start[i];
-  while (q_start[++i] != (char)0) {
+  while (true) {
+    if ((q_start[i] & 0b11000000) == 0b11000000) {
+      q_start = orig_buffer + (htobe16((*(uint16_t *)q_start)) & 0x3FFF);
+    }
+    len = q_start[i];
+    if (q_start[++i] == (char)0) {
+      break;
+    }
     std::string name;
     for (int j = 0; j < len; j++) {
       name.push_back((char)q_start[i + j]);
     }
+#ifdef DEBUG
     std::cout << "Name is: " << name << "\n";
+#endif
     i += len;
     len = q_start[i];
     names.push_back(name);
@@ -194,6 +199,12 @@ size_t parse_answer(char *bytes, DNS_Resource_t *answer, char *orig_buffer) {
     return 2 + sizeof(fixed_size_packet) + parsed->len;
   }
   case CNAME: {
+    dns_name_string *parsed =
+        get_name(bytes + 2 + sizeof(fixed_size_packet), orig_buffer);
+    answer->r_data = parsed->name;
+    return 2 + sizeof(fixed_size_packet) + parsed->len;
+  }
+  case NS: {
     dns_name_string *parsed =
         get_name(bytes + 2 + sizeof(fixed_size_packet), orig_buffer);
     answer->r_data = parsed->name;
