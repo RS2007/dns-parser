@@ -1,7 +1,6 @@
 #include "dns.h"
 #include <algorithm>
 #include <cstring>
-#include <endian.h>
 #include <iostream>
 #include <vector>
 

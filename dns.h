@@ -2,12 +2,19 @@
 
 #include <assert.h>
 #include <cstring>
-#include <endian.h>
 #include <iostream>
 #include <numeric>
 #include <stdint.h>
 #include <string>
 #include <vector>
+
+#ifdef __APPLE__
+#include <libkern/OSByteOrder.h>
+#define htobe16(x) OSSwapHostToBigInt16(x)
+#define htobe32(x) OSSwapHostToBigInt32(x)
+#else
+#include <endian.h>
+#endif
 
 typedef struct __attribute__((packed)) {
   uint16_t id;
