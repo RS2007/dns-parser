@@ -210,6 +210,11 @@ size_t parse_answer(char *bytes, DNS_Resource_t *answer, char *orig_buffer) {
     answer->r_data = parsed->name;
     return 2 + sizeof(fixed_size_packet) + parsed->len;
   }
+  case TXT: {
+    char *parsed = (char *)(bytes + 2 + sizeof(fixed_size_packet));
+    answer->r_data = parsed;
+    return 2 + sizeof(fixed_size_packet) + strlen(parsed);
+  }
   default: {
     assert(0 && "Not implemented");
   }
